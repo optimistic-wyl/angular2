@@ -1,0 +1,101 @@
+基于 Typescript 开发的时候，很麻烦的一个问题就是类型定义。导致在编译的时候，经常会看到一连串的找不到类型的提示。
+
+解决的方式经过了许多的变化，从 DefinitelyTyped 到 typings。最后是 @types。在 Typescript 2.0 之后，推荐使用 @types 方式。
+
+1、DefinitelyTyped----------------------
+
+这个工具已经不被推荐，仅作介绍。
+
+多数来自 javascript 的库是没有 TypeScript 类型定义的。为了解决这个问题，DefinitelyTyped 被创建出来，它提供了多数流行的脚本库的 TypeScript 定义，你可以使用名为 tsd 的一个工具来管理它。
+
+首先，你需要安装这个工具。
+
+npm install tsd -g
+然后，可以使用这个工具来安装你需要的定义库。比如 jquery 的定义库。
+
+tsd install jquery --save
+ 
+
+如果提供了 --save 参数，它会创建一个名为 tsd.json 的配置文件来保存所管理的类型定义包。看起来如下所示。
+
+{
+    "version": "v4",
+    "repo": "DefinitelyTyped/DefinitelyTyped",
+    "ref": "master",
+    "path": "typings",
+    "bundle": "typings/tsd.d.ts",
+    "installed": {
+        "node/node.d.ts": {
+            "commit": "6834f97fb33561a3ad40695084da2b660efaee29"
+        }
+    }
+}
+ 
+
+以后，直接使用
+tsd install
+
+2、Typings---------------------------
+这个也不推荐了。
+
+后来，我们有了 Typings, 这是也是一个用来管理 Typescript 定义的库，你需要安装这个应用。
+
+# Install Typings CLI utility.
+npm install typings --global
+ 如果需要一个库的定义文件，比如 react
+
+typings install react --save
+ 安装之后，在你的项目文件夹中会自动创建一个名为 typings 的文件夹来专门保存类型定义的库。
+
+如果这个定义来自 DefinitelyTyped, 则现有加上一个参数 --ambient
+
+typings install jquery --ambient  --save
+它自己需要一个配置文件 typings.json，可以用它来管理项目使用到的类型定义，这样，类似于 NPM，我们可以使用 install 命令来自动安装需要的类型定义。
+
+typings install
+这个 typings.json 文件的内容示例如下。
+
+{
+  "ambientDependencies": {
+    "jquery": "registry:dt/jquery#1.10.0+20161119044246"
+  },
+  "dependencies": {
+    "react": "registry:npm/react#15.0.1+20160601175240"
+  }
+}
+还是需要专门的工具来管理类型系统。我们可以让这个问题更加简单一点。
+
+3、@Types-----------------------------------
+使用另外一套系统来管理类型定义显然不太方便。
+
+在 Typescript 2.0 之后，TypeScript 将会默认的查看 ./node_modules/@types 文件夹，自动从这里来获取模块的类型定义，当然了，你需要独立安装这个类型定义。
+
+比如，你希望 core.js 的类型定义，那么，你需要安装这个库的定义库。
+
+npm install --save @types/core-js
+与我们安装一个普通的库没有区别。当然了，常用的 jquery 也有。Microsoft 在 The Future of Declaration Files 介绍了 TypeScript 的这个新特性。
+
+默认情况下，所有的 @types 包都会在编译时应用，任意层的 node_modules/@types 都会被使用，进一步说，在 ./node_modules/@types/,../node_modules/@types/, ../../node_modules/@types/ 都被应用。
+
+如果你的类型定义不在这个文件夹中，可以使用 typesRoot 来配置，只有在 typeRoots 中的包才会被包含，例如：
+
+{
+   "compilerOptions": {
+       "typeRoots" : ["./typings"]
+   }
+}
+现在，只有在 ./typings 中的才会应用，而 ./node_modules/@types 中的则不会。
+
+如果配置了 types，则只有列出的包才会包含。
+
+{
+   "compilerOptions": {
+       "types" : ["node", "lodash", "express"]
+   }
+}
+这样将只会包含 ./node_modules/@types/node, ./node_modules/@types/lodash 和 ./node_modules/@types/express ，其它的则不会被包含进来。
+
+如果配置为
+
+"types": []
+则不会包含任何包。
